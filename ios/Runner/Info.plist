@@ -10,7 +10,7 @@
 #<key>CFBundleURLSchemes</key>
 #<array>
 #<string>REVERSED_CLIENT_ID</string>
-#<!-- Replace with your reversed client ID from GoogleService-Info.plist -->
+#<!-- Replace with your reversed client ID from GoogleService-Info.plist
 #</array>
 #</dict>
 #</array>-->
