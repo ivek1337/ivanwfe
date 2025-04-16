@@ -11,7 +11,7 @@ workflows:
 
       - name: Build unsigned .app for simulator
 
-        script: flutter build ios --simulator
+        script: flutter build ios --simulator --build-name=1.0.0 --build-number=2
 
     artifacts:
 
