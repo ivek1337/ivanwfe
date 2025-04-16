@@ -1,0 +1,18 @@
+workflows:
+  flutter-ios-simulator:
+    name: Flutter iOS Simulator
+    environment:
+      flutter: 3.27.3
+      xcode: 16.2
+    scripts:
+      - name: Run Flutter pub get
+
+        script: flutter pub get
+
+      - name: Build unsigned .app for simulator
+
+        script: flutter build ios --simulator
+
+    artifacts:
+
+      - build/ios/iphonesimulator/Runner.app
