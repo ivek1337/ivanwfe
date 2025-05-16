@@ -55,7 +55,7 @@ android {
         versionName = flutterVersionName
     }
 
-    signingConfigs {
+    //signingConfigs {
         //if (System.getenv()["CI"]) { // CI=true is exported by Codemagic
             //release {
                 //storeFile file(System.getenv()["CM_KEYSTORE_PATH"])
@@ -63,8 +63,8 @@ android {
                 //keyAlias System.getenv()["CM_KEY_ALIAS"]
                 //keyPassword System.getenv()["CM_KEY_PASSWORD"]
             //}
-        }
-    }
+        //}
+    //}
 
     buildTypes {
         release {
