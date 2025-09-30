@@ -10,9 +10,6 @@ jobs:
     runs-on: macos-latest
     timeout-minutes: 90
 
-    env:
-      APP_ID: 6677026826
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
