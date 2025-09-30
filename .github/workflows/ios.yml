@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - '**'
- 
+
 jobs:
   build-ios-unsigned:
     runs-on: macos-latest
@@ -22,24 +22,24 @@ jobs:
         with:
           channel: stable
 
+      - name: Install Flutter packages
+        run: flutter pub get
+
       - name: Activate FlutterFire CLI and Melos
         run: |
           dart pub global activate flutterfire_cli || echo "FlutterFire CLI activation failed, continuing..."
           dart pub global activate melos || echo "Melos activation failed, continuing..."
           melos bootstrap || echo "Melos bootstrap failed, continuing..."
 
-      - name: Get Flutter packages
-        run: flutter pub get
-
       - name: Install CocoaPods dependencies
         run: |
           cd ios
           pod install --repo-update
 
-      - name: Flutter analyze
+      - name: Run Flutter analyze
         run: flutter analyze
 
-      - name: Flutter unit tests
+      - name: Run Flutter unit tests
         run: flutter test
         continue-on-error: true
 
