@@ -21,9 +21,6 @@ definitions:
         cd build/web
         7z a -r ../web.zip ./*
 
-  slack_publish: &slack_publish
-    slack:
-    channel: "#builds"
 
 workflows:
 
@@ -171,10 +168,6 @@ workflows:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
 
-    publishing:
-
-      slack: *slack_publish
-
 
   android-workflow:
     name: Android Workflow
@@ -244,7 +237,6 @@ workflows:
         notify:
           success: true
           failure: false
-      <<: *slack_publish
       scripts:
         - echo 'Post-publish script'
   
