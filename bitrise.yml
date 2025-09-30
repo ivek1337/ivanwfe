@@ -5,10 +5,16 @@ project_type: flutter
 app:
   envs:
     - FLUTTER_VERSION: stable
+      opts:
+        is_expand: true
     - APP_ID: 6677026826
+      opts:
+        is_expand: true
 
 workflows:
   ios_unsigned_build:
+    envs:
+      - IOS_ENV: dev
     steps:
       - git::https://github.com/bitrise-io/steps-git-clone.git@v12.3.7: {}
 
