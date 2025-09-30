@@ -18,12 +18,12 @@ definitions:
       name: Flutter unit tests
       script: |
         flutter test
-    - &flutter_build_webapp
-      name: Flutter build webapp
-      script: |
-        flutter build web --release
-        cd build/web
-        7z a -r ../web.zip ./*
+    # - &flutter_build_webapp
+    #   name: Flutter build webapp
+    #   script: |
+    #     flutter build web --release
+    #     cd build/web
+    #     7z a -r ../web.zip ./*
 
   email_develop: &email_develop
     email:
