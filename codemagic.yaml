@@ -18,17 +18,16 @@ definitions:
       name: Flutter unit tests
       script: |
         flutter test
-  email_develop: &email_develop
-    email:
-      recipients:
-        - user_3@example.com
-        - user_4@example.com
-        - ivan@codemagic.io
-      notify:
-        success: true
-        failure: true
+  email: &email_develop
+    recipients:
+      - user_3@example.com
+      - user_4@example.com
+      - ivan@codemagic.io
+    notify:
+      success: true
+      failure: true
 
-  slack:
+  slack: &slack_publish
     channel: "#builds"
     notify_on_build_failed: true
     notify_on_build_succeeded: true
