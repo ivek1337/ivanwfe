@@ -1,4 +1,4 @@
-name: iOS Flutter Unsigned CI
+name: iOS Unsigned Flutter Build
 
 on:
   push:
@@ -10,17 +10,17 @@ jobs:
     runs-on: macos-latest
     timeout-minutes: 90
 
+    env:
+      APP_ID: 6677026826
+
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Flutter stable
+      - name: Setup Flutter stable channel
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-
-      - name: Flutter pub get
-        run: flutter pub get
 
       - name: Activate FlutterFire CLI and Melos
         run: |
@@ -28,17 +28,26 @@ jobs:
           dart pub global activate melos || echo "Melos activation failed, continuing..."
           melos bootstrap || echo "Melos bootstrap failed, continuing..."
 
-      - name: Install CocoaPods
+      - name: Get Flutter packages
+        run: flutter pub get
+
+      - name: Install CocoaPods dependencies
         run: |
           cd ios
           pod install --repo-update
 
-      - name: Run flutter analyze
+      - name: Flutter analyze
         run: flutter analyze
 
-      - name: Run flutter unit tests
+      - name: Flutter unit tests
         run: flutter test
         continue-on-error: true
 
       - name: Build unsigned IPA
         run: flutter build ipa --release --no-codesign
+
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ios-unsigned-ipa
+          path: build/ios/ipa/*.ipa
