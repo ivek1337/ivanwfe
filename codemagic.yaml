@@ -256,7 +256,6 @@ workflows:
     artifacts:
       - build/web.zip
       - flutter_drive.log
-    publishing:
   
   flutter-ios-simulator:
     name: Flutter iOS Simulator
