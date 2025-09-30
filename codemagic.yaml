@@ -18,14 +18,12 @@ definitions:
       name: Flutter unit tests
       script: |
         flutter test
-
   email_develop: &email_develop
     email:
       recipients:
         - user_3@example.com
         - user_4@example.com
         - ivan@codemagic.io
-
   slack_publish: &slack_publish
     slack:
       channel: "#builds"
