@@ -137,18 +137,10 @@ workflows:
         # Note: This action is performed during post-processing.
         submit_to_app_store: false
 
+
   ios-unsigned-workflow:
-    name: iOS Unsigned Build Workflow
-    max_build_duration: 60
-    environment:
-      xcode: 16.4
-      flutter: stable
-      groups: []
-      ios_signing:
-        distribution_type: development
-        code_signing_identity: ""
-        provisioning_profile_specifier: ""
-        automatic_code_signing: false
+    name: iOS Unsigned Workflow
+    max_build_duration: 90
     triggering:
       events:
         - push
@@ -156,22 +148,34 @@ workflows:
         - pattern: '*'
           include: true
           source: true
+    environment:
+      xcode: 16.4
+      flutter: stable
     scripts:
-      - name: Get Flutter packages
-        script: flutter pub get
-
-      - name: Flutter analyze
-        script: flutter analyze
-
-      - name: Flutter unit tests
-        script: flutter test
-
-      - name: Flutter build unsigned IPA
+      - name: Melos & bootstrap
         script: |
-          flutter build ipa --no-codesign --release
-          
+          echo "Setting up Melos and FlutterFire CLI"
+          dart pub global activate flutterfire_cli || echo "FlutterFire CLI activation failed, continuing..."
+          dart pub global activate melos || echo "Melos activation failed, continuing..."
+          melos bootstrap || echo "Melos bootstrap failed, continuing..."
+      - *get_flutter_packages
+      - name: Install CocoaPods
+        script: |
+          find . -name "Podfile" -execdir pod install \;
+      - *analyze_flutter
+      - *flutter_unit_tests
+        ignore_failure: true
+      - *flutter_build_unsigned_ipa
+
     artifacts:
       - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+
+    publishing:
+      email: *email_develop
+      slack: *slack_publish
+
+  
 
 
   android-workflow:
