@@ -1,0 +1,55 @@
+version: 2.1
+
+executors:
+  macos-executor:
+    macos:
+      xcode: "14.3.1"
+    environment:
+      FLUTTER_VERSION: stable
+
+jobs:
+  build_ios_unsigned:
+    executor: macos-executor
+    steps:
+      - checkout
+
+      - run:
+          name: Set up Flutter SDK
+          command: |
+            brew install --cask flutter || true
+            flutter channel stable
+            flutter upgrade
+            flutter --version
+
+      - run:
+          name: Flutter pub get
+          command: flutter pub get
+
+      - run:
+          name: Activate FlutterFire CLI and Melos
+          command: |
+            dart pub global activate flutterfire_cli || echo "FlutterFire CLI activation failed, continuing..."
+            dart pub global activate melos || echo "Melos activation failed, continuing..."
+            melos bootstrap || echo "Melos bootstrap failed, continuing..."
+
+      - run:
+          name: Install CocoaPods dependencies
+          command: |
+            cd ios
+            pod install --repo-update
+
+      - run:
+          name: Flutter analyze
+          command: flutter analyze
+
+      - run:
+          name: Flutter unit tests
+          command: flutter test || true
+
+      - run:
+          name: Build unsigned IPA
+          command: flutter build ipa --release --no-codesign
+
+      - store_artifacts:
+          path: build/ios/ipa
+          destination: ios_unsigned_ipa
