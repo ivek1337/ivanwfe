@@ -1,4 +1,4 @@
-name: iOS Workflow
+name: iOS Flutter CI
 
 on:
   push:
@@ -7,41 +7,49 @@ on:
 
 jobs:
   build-ios:
-    name: Build and Test iOS
     runs-on: macos-latest
     timeout-minutes: 120
 
     env:
-      FLUTTER_VERSION: stable
       APP_ID: 6677026826
+      FLUTTER_CHANNEL: stable
 
     steps:
-    - name: Checkout repository
+    - name: Checkout repo
       uses: actions/checkout@v4
 
-    - name: Set up Flutter
+    - name: Setup flutter stable
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: ${{ env.FLUTTER_VERSION }}
+        flutter-version: 3.10.6  # Fixed known arm64 compatible version
 
-    # Simulate the Melos & bootstrap script (FlutterFire & Melos might require setup)
-    - name: Setup Flutter environment and dependencies
+    - name: Update Flutter to latest stable (workaround for arm64)
       run: |
-        echo "FLUTTER_ROOT is set to: $FLUTTER_ROOT"
-        echo "Running flutter pub get"
-        flutter pub get
+        cd $FLUTTER_ROOT
+        git fetch --tags
+        git checkout $(curl -s https://storage.googleapis.com/flutter_infra_release/releases/releases_${FLUTTER_CHANNEL}.json | jq -r '.current_release.version')
+        flutter --version
 
+    - name: Flutter pub get
+      run: flutter pub get
+
+    - name: Activate FlutterFire CLI and Melos
+      run: |
         dart pub global activate flutterfire_cli || echo "FlutterFire CLI activation failed, continuing..."
         dart pub global activate melos || echo "Melos activation failed, continuing..."
         melos bootstrap || echo "Melos bootstrap failed, continuing..."
 
     - name: Machine Specs
       run: |
-        system_profiler SPHardwareDataType
+        sysctl -n machdep.cpu.brand_string
+        sysctl -n hw.physicalcpu
+        sysctl -n hw.logicalcpu
+        sysctl -n hw.memsize
 
-    - name: Install CocoaPods dependencies
-      run: pod install --repo-update
-      working-directory: ios
+    - name: Install CocoaPods
+      run: |
+        cd ios
+        pod install --repo-update
 
     - name: Run flutter analyze
       run: flutter analyze
@@ -50,11 +58,9 @@ jobs:
       run: flutter test
       continue-on-error: true
 
-    - name: Increment build number and build IPA
+    - name: Get latest app store build number and build ipa
       run: |
-        BUILD_NUMBER=$(bash <(curl -s https://raw.githubusercontent.com/codemagic-ci-cd/codemagic-cli/main/scripts/app-store-connect/get-latest-build-number.sh) $APP_ID)
-        BUILD_NUMBER=$((BUILD_NUMBER + 1))
-        echo "Building IPA with build number: $BUILD_NUMBER"
+        BUILD_NUMBER=$(($(bash <(curl -s https://raw.githubusercontent.com/codemagic-ci-cd/codemagic-cli/main/scripts/app-store-connect/get-latest-build-number.sh) $APP_ID) + 1))
         flutter build ipa --release \
           --build-name=1.0.$BUILD_NUMBER \
           --build-number=$BUILD_NUMBER \
