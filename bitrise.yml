@@ -1,37 +1,65 @@
+---
+format_version: '23'
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+project_type: flutter
 workflows:
-  ios_unsigned_build:
+  deploy:
+    description: |
+      Builds and deploys app using [Deploy to bitrise.io Step](https://devcenter.bitrise.io/en/getting-started/getting-started-with-flutter-apps.html#deploying-a-flutter-app).
+
+      If you build for iOS, make sure to set up code signing secrets on Bitrise for a successful build.
+
+      Next steps:
+      - Check out [Getting started with Flutter apps](https://devcenter.bitrise.io/en/getting-started/getting-started-with-flutter-apps.html) for signing and deployment options.
+      - Check out the [Code signing guide](https://devcenter.bitrise.io/en/code-signing.html) for iOS and Android
     steps:
-      - git::https://github.com/bitrise-io/steps-git-clone.git@v12.3.7: {}
-      - script@1:
-          title: Activate FlutterFire CLI and Melos
-          inputs:
-            - content: |-
-                #!/bin/bash
-                dart pub global activate flutterfire_cli || echo "FlutterFire CLI activation failed, continuing..."
-                dart pub global activate melos || echo "Melos activation failed, continuing..."
-                melos bootstrap || echo "Melos bootstrap failed, continuing..."
-      - flutter-install@0: {}
-      - flutter-pub-get@0: {}
-      - cocoapods-install@1:
-          title: Install CocoaPods dependencies
-      - flutter-analyze@0: {}
-      - flutter-test@0:
-          continue_on_error: true
-      - flutter-build@0:
-          inputs:
-            platform: ios
-            ios_export_method: 'development'
-            ios_code_signing_identity: ''
-            ios_code_signing_required: 'no'
-            ios_export_options: |
-              <plist version="1.0">
-              <dict>
-                <key>compileBitcode</key>
-                <false/>
-                <key>method</key>
-                <string>development</string>
-              </dict>
-              </plist>
-            flutter_build_ios_no_codesign: 'true'
-            release: 'true'
-      - deploy-to-bitrise-io@1: {}
+    - git-clone@8: {}
+    - certificate-and-profile-installer@1: {}
+    - flutter-installer@0:
+        inputs:
+        - version: 3.35.5
+        - is_update: 'false'
+    - flutter-analyze@0:
+        inputs:
+        - project_location: "$BITRISE_FLUTTER_PROJECT_LOCATION"
+    - flutter-test@1:
+        inputs:
+        - project_location: "$BITRISE_FLUTTER_PROJECT_LOCATION"
+    - flutter-build@0:
+        inputs:
+        - project_location: "$BITRISE_FLUTTER_PROJECT_LOCATION"
+        - platform: both
+        - ios_output_type: archive
+    - deploy-to-bitrise-io@2: {}
+  primary:
+    description: |
+      Builds project and runs tests.
+
+      Next steps:
+      - Check out [Getting started with Flutter apps](https://devcenter.bitrise.io/en/getting-started/getting-started-with-flutter-apps.html).
+    steps:
+    - git-clone@8: {}
+    - flutter-installer@0:
+        inputs:
+        - version: 3.35.5
+        - is_update: 'false'
+    - restore-dart-cache@2: {}
+    - flutter-test@1:
+        inputs:
+        - project_location: "$BITRISE_FLUTTER_PROJECT_LOCATION"
+    - save-dart-cache@1: {}
+    - deploy-to-bitrise-io@2: {}
+    triggers:
+      push:
+      - branch: main
+      pull_request:
+      - source_branch: "*"
+meta:
+  bitrise.io:
+    stack: osx-xcode-16.4.x
+    machine_type_id: g2.mac.large
+app:
+  envs:
+  - BITRISE_FLUTTER_PROJECT_LOCATION: "."
+    opts:
+      is_expand: false
