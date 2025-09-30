@@ -20,10 +20,7 @@ definitions:
         flutter build web --release
         cd build/web
         7z a -r ../web.zip ./*
-    - &flutter_build_unsigned_ipa
-      name: Flutter build unsigned ipa
-      script: |
-        flutter build ipa --release --no-codesign
+
   email_develop: &email_develop
     email:
       recipients:
