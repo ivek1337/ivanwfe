@@ -20,15 +20,11 @@ definitions:
         flutter build web --release
         cd build/web
         7z a -r ../web.zip ./*
-  email_develop: &email_develop
-    email:
-      recipients:
-        - user_3@example.com
-        - user_4@example.com
-        - ivan@codemagic.io
+
   slack_publish: &slack_publish
     slack:
-      channel: "#builds"
+    channel: "#builds"
+
 workflows:
 
   ios-yaml-workflow:
@@ -176,7 +172,7 @@ workflows:
       - /tmp/xcodebuild_logs/*.log
 
     publishing:
-      email: *email_develop
+
       slack: *slack_publish
 
 
@@ -248,7 +244,6 @@ workflows:
         notify:
           success: true
           failure: false
-      <<: *email_develop
       <<: *slack_publish
       scripts:
         - echo 'Post-publish script'
@@ -270,7 +265,6 @@ workflows:
       - build/web.zip
       - flutter_drive.log
     publishing:
-      <<: *email_develop
   
   flutter-ios-simulator:
     name: Flutter iOS Simulator
