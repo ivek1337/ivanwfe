@@ -2,10 +2,16 @@ format_version: '11'
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 project_type: flutter
 
+app:
+  envs:
+    - FLUTTER_VERSION: stable
+    - APP_ID: 6677026826
+
 workflows:
   ios_unsigned_build:
     steps:
       - git::https://github.com/bitrise-io/steps-git-clone.git@v12.3.7: {}
+
       - script@1:
           title: Activate FlutterFire CLI and Melos
           inputs:
@@ -14,13 +20,19 @@ workflows:
                 dart pub global activate flutterfire_cli || echo "FlutterFire CLI activation failed, continuing..."
                 dart pub global activate melos || echo "Melos activation failed, continuing..."
                 melos bootstrap || echo "Melos bootstrap failed, continuing..."
+
       - flutter-install@0: {}
+
       - flutter-pub-get@0: {}
+
       - cocoapods-install@1:
           title: Install CocoaPods dependencies
+
       - flutter-analyze@0: {}
+
       - flutter-test@0:
           continue_on_error: true
+
       - flutter-build@0:
           inputs:
             platform: ios
@@ -38,4 +50,5 @@ workflows:
               </plist>
             flutter_build_ios_no_codesign: 'true'
             release: 'true'
+
       - deploy-to-bitrise-io@1: {}
