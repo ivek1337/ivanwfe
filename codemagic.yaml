@@ -53,7 +53,7 @@ workflows:
         - codepush
       ios_signing:
         distribution_type: app_store
-        bundle_identifier: io.codemagic.ivan.wfedemo.wfedemo
+        bundle_identifier: io.codemagic.ivan.wfedemo
       vars:
         APP_ID: 6677026826 # <-- Use the TestFlight Apple id number (An automatically generated ID assigned to your app) found under General > App Information > Apple ID.
       flutter: stable
