@@ -15,7 +15,7 @@ definitions:
       script: |
         flutter test
   email_develop: &email_develop
-    email: &email_develop
+    email: 
       recipients:
         - user_3@example.com
         - user_4@example.com
@@ -24,7 +24,7 @@ definitions:
         success: true
         failure: true
   slack_publish: &slack_publish
-    slack: &slack_publish
+    slack: 
       channel: "#builds"
       notify_on_build_failed: true
       notify_on_build_succeeded: true
