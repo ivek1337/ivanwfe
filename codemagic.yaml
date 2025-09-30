@@ -2,6 +2,10 @@ definitions:
   env_versions: &env_versions
     flutter: stable
   scripts:
+    - &flutter_build_unsigned_ipa
+      name: Flutter build unsigned ipa
+      script: |
+        flutter build ipa --release --no-codesign
     - &get_flutter_packages
       name: Get Flutter packages
       script: |
