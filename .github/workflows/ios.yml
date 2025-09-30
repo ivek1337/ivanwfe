@@ -1,70 +1,31 @@
-name: iOS Flutter CI
+name: iOS Flutter Unsigned Build
 
 on:
   push:
-    branches:
-      - '**'
+    branches: ['**']
 
 jobs:
-  build-ios:
+  build-ios-unsigned:
     runs-on: macos-latest
-    timeout-minutes: 120
-
-    env:
-      APP_ID: 6677026826
-      FLUTTER_VERSION: 3.24.0-0.0.pre
+    timeout-minutes: 60
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Flutter manually (workaround for arm64 version detection bug)
-        run: |
-          FLUTTER_VERSION=${{ env.FLUTTER_VERSION }}
-          FLUTTER_ROOT="$HOME/flutter"
-          mkdir -p "$FLUTTER_ROOT"
-          cd "$FLUTTER_ROOT"
-          if [ ! -d "$FLUTTER_ROOT/bin" ]; then
-            echo "Downloading Flutter SDK $FLUTTER_VERSION"
-            curl -o flutter_sdk.zip https://storage.googleapis.com/flutter_infra_release/releases/${FLUTTER_VERSION:0:4}/flutter_macos_${FLUTTER_VERSION}_arm64.zip
-            unzip flutter_sdk.zip
-            rm flutter_sdk.zip
-          fi
-          export PATH="$FLUTTER_ROOT/bin:$PATH"
-          flutter --version
+      - name: Set up Flutter stable channel
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
 
       - name: Flutter pub get
         run: flutter pub get
 
-      - name: Activate FlutterFire CLI and Melos
-        run: |
-          dart pub global activate flutterfire_cli || echo "FlutterFire CLI activation failed, continuing..."
-          dart pub global activate melos || echo "Melos activation failed, continuing..."
-          melos bootstrap || echo "Melos bootstrap failed, continuing..."
-
-      - name: Print machine specs
-        run: |
-          sysctl -n machdep.cpu.brand_string
-          sysctl -n hw.physicalcpu
-          sysctl -n hw.logicalcpu
-          sysctl -n hw.memsize
-
-      - name: Install CocoaPods dependencies
-        run: |
-          cd ios
-          pod install --repo-update
-
-      - name: Run flutter analyze
+      - name: Flutter analyze
         run: flutter analyze
 
-      - name: Run flutter tests
+      - name: Flutter test
         run: flutter test
-        continue-on-error: true
 
-      - name: Get latest app store build number and build IPA
-        run: |
-          BUILD_NUMBER=$(($(bash <(curl -s https://raw.githubusercontent.com/codemagic-ci-cd/codemagic-cli/main/scripts/app-store-connect/get-latest-build-number.sh) $APP_ID) + 1))
-          flutter build ipa --release \
-            --build-name=1.0.$BUILD_NUMBER \
-            --build-number=$BUILD_NUMBER \
-            --export-options-plist=ios/export_options.plist
+      - name: Build unsigned ipa
+        run: flutter build ipa --no-codesign --release
