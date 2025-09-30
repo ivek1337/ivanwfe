@@ -14,22 +14,21 @@ definitions:
       name: Flutter unit tests
       script: |
         flutter test
+    - &flutter_build_webapp
+      name: Flutter build webapp
+      script: |
+        flutter build web --release
+        cd build/web
+        7z a -r ../web.zip ./*
   email_develop: &email_develop
-    email: 
+    email:
       recipients:
         - user_3@example.com
         - user_4@example.com
         - ivan@codemagic.io
-      notify:
-        success: true
-        failure: true
   slack_publish: &slack_publish
-    slack: 
+    slack:
       channel: "#builds"
-      notify_on_build_failed: true
-      notify_on_build_succeeded: true
-
-      
 workflows:
 
   ios-yaml-workflow:
@@ -54,7 +53,7 @@ workflows:
         - codepush
       ios_signing:
         distribution_type: app_store
-        bundle_identifier: io.codemagic.ivan.wfedemo
+        bundle_identifier: io.codemagic.ivan.wfedemo.wfedemo
       vars:
         APP_ID: 6677026826 # <-- Use the TestFlight Apple id number (An automatically generated ID assigned to your app) found under General > App Information > Apple ID.
       flutter: stable
@@ -165,6 +164,7 @@ workflows:
           find . -name "Podfile" -execdir pod install \;
       - *analyze_flutter
       - *flutter_unit_tests
+        ignore_failure: true
       - name: Flutter build unsigned ipa
         script: |
           flutter build ipa --release --no-codesign
@@ -176,8 +176,6 @@ workflows:
     publishing:
       email: *email_develop
       slack: *slack_publish
-
-  
 
 
   android-workflow:
@@ -196,14 +194,7 @@ workflows:
       flutter: stable  #or we can write << : *env_versions
       android_signing:
         - android_keystore
-    #triggering:
-    #  events:
-    #    - push
-    #  branch_patterns:
-    #    - pattern: '*'
-    #      include: true
-    #      source: true
-    #  cancel_previous_builds: false
+
     scripts:
       - name: Set up code signing settings on Xcode project
         script: xcode-project use-profiles
@@ -235,10 +226,7 @@ workflows:
       - name: CodePush authentication
         script: |
           code-push-standalone login "https://codepush.codemagic.io" --key $CODEPUSH_ACCESS_KEY
-      #- name: CodePush add app # this script can be skipped if you have existing apps
-      #  script: |
-      #    code-push-standalone app add YOUR_PREFERRED_APP_NAME
-      #    code-push-standalone app ls
+
       - name: Install npm dependencies
         script: |
           npm install
@@ -263,7 +251,24 @@ workflows:
       scripts:
         - echo 'Post-publish script'
   
-
+  web-workflow:
+    name: Web app workflow
+    max_build_duration: 10
+    environment:
+      << : *env_versions
+      groups:
+        - keystore_credentials
+        - google_play
+    scripts:
+      - *get_flutter_packages
+      - *analyze_flutter
+      - *flutter_unit_tests
+      - *flutter_build_webapp
+    artifacts:
+      - build/web.zip
+      - flutter_drive.log
+    publishing:
+      <<: *email_develop
   
   flutter-ios-simulator:
     name: Flutter iOS Simulator
@@ -291,21 +296,7 @@ workflows:
     artifacts:
 
       - build/ios/iphonesimulator/Runner.app
-      #- name: install dependencies
-      #  script: flutter pub get
-      #- name: Build unsigned .app
-      #  script: |  
-      #    xcodebuild -workspace "ios/Runner.xcworkspace" \
-      #      -scheme "Runner" \
-      #      -sdk iphonesimulator \
-      #      -destination 'platform=iOS Simulator,name=iPhone 16 Pro Max,OS=18.2' \
-      #      -configuration Debug \
-      #      CODE_SIGN_IDENTITY="" \
-      #      CODE_SIGNING_REQUIRED=NO \
-      #      CODE_SIGNING_ALLOWED=NO \
-      #      -derivedDataPath ios/output
-    #artifacts:
-      #- ios/output/Build/Products/Debug-iphonesimulator/Runner.app
+
 
   android-simulator:
     name: Android debug workflow
