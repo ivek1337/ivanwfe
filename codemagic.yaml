@@ -186,8 +186,8 @@ workflows:
       android_signing:
         - android_keystore
     cache:
-    cache_paths:
-      - ~/.gradle/caches
+      cache_paths:
+        - ~/.gradle/caches
 
     scripts:
       - name: Set up code signing settings on Xcode project
