@@ -143,6 +143,11 @@ workflows:
     environment:
       xcode: 16.4
       flutter: stable
+    cache:
+      cache_paths:
+        - $FLUTTER_ROOT/.pub-cache    # Dart packages cache
+        - $HOME/.gradle/caches        # Android Gradle cache
+        - $HOME/Library/Caches/CocoaPods # CocoaPods cache for iOS dependencies
     scripts:
       - name: Melos & bootstrap
         script: |
