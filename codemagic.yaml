@@ -184,7 +184,7 @@ workflows:
         - keystore_credentials
         - google_play
       vars:
-        PACKAGE_NAME: "io.codemagic.ivan.wfedemo"
+        PACKAGE_NAME: "io.kozic.ivan.demo" #"io.codemagic.ivan.wfedemo"
         GOOGLE_PLAY_TRACK: internal
         submit_as_draft: true
       flutter: stable  #or we can write << : *env_versions
